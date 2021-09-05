@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 // const MongoClient = require('mongodb').MongoClient;
+const fileUpload = require('express-fileupload');
 const { MongoClient } = require('mongodb');
 require('dotenv').config;
 
@@ -11,6 +12,8 @@ const port = process.env.PORT || 5000;
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
+app.use(express.static('doctors'));
+app.use(fileUpload());
 
 
 
@@ -51,6 +54,21 @@ client.connect(err => {
    .toArray((err, appointments) => {
      res.send(appointments)
    })
+ })
+
+ app.post('/addADoctor', (req, res) => {
+   const file = req.files.file;
+   const name = req.body.name;
+   const email = req.body.email;
+   console.log(name, email, file);
+   file.mv(`${__dirname}/doctors/${file.name}`, err => {
+     if(err){
+       console.log(err)
+       return res.status(500).send({msg: 'Failed to upload Image'});
+     }
+     return res.send({name: file.name, path: `/${file.name}`})
+   }
+   )
  })
 
 
